@@ -30,70 +30,70 @@ export function usePositionFixed({
   const [activeUrl, setActiveUrl] = React.useState(() => (typeof window !== 'undefined' ? window.location.href : ''));
   const scrollPos = React.useRef(0);
 
-  const setPositionFixed = React.useCallback(() => {
-    // All browsers on iOS will return true here.
-    if (!isSafari()) return;
+  // const setPositionFixed = React.useCallback(() => {
+  //   // All browsers on iOS will return true here.
+  //   if (!isSafari()) return;
 
-    // If previousBodyPosition is already set, don't set it again.
-    if (previousBodyPosition === null && isOpen && !noBodyStyles) {
-      previousBodyPosition = {
-        position: document.body.style.position,
-        top: document.body.style.top,
-        left: document.body.style.left,
-        height: document.body.style.height,
-        right: 'unset',
-      };
+  //   // If previousBodyPosition is already set, don't set it again.
+  //   if (previousBodyPosition === null && isOpen && !noBodyStyles) {
+  //     previousBodyPosition = {
+  //       position: document.body.style.position,
+  //       top: document.body.style.top,
+  //       left: document.body.style.left,
+  //       height: document.body.style.height,
+  //       right: 'unset',
+  //     };
 
-      // Update the dom inside an animation frame
-      const { scrollX, innerHeight } = window;
+  //     // Update the dom inside an animation frame
+  //     const { scrollX, innerHeight } = window;
 
-      document.body.style.setProperty('position', 'fixed', 'important');
-      Object.assign(document.body.style, {
-        top: `${-scrollPos.current}px`,
-        left: `${-scrollX}px`,
-        right: '0px',
-        height: 'auto',
-      });
+  //     document.body.style.setProperty('position', 'fixed', 'important');
+  //     Object.assign(document.body.style, {
+  //       top: `${-scrollPos.current}px`,
+  //       left: `${-scrollX}px`,
+  //       right: '0px',
+  //       height: 'auto',
+  //     });
 
-      window.setTimeout(
-        () =>
-          window.requestAnimationFrame(() => {
-            // Attempt to check if the bottom bar appeared due to the position change
-            const bottomBarHeight = innerHeight - window.innerHeight;
-            if (bottomBarHeight && scrollPos.current >= innerHeight) {
-              // Move the content further up so that the bottom bar doesn't hide it
-              document.body.style.top = `${-(scrollPos.current + bottomBarHeight)}px`;
-            }
-          }),
-        300,
-      );
-    }
-  }, [isOpen]);
+  //     window.setTimeout(
+  //       () =>
+  //         window.requestAnimationFrame(() => {
+  //           // Attempt to check if the bottom bar appeared due to the position change
+  //           const bottomBarHeight = innerHeight - window.innerHeight;
+  //           if (bottomBarHeight && scrollPos.current >= innerHeight) {
+  //             // Move the content further up so that the bottom bar doesn't hide it
+  //             document.body.style.top = `${-(scrollPos.current + bottomBarHeight)}px`;
+  //           }
+  //         }),
+  //       300,
+  //     );
+  //   }
+  // }, [isOpen]);
 
-  const restorePositionSetting = React.useCallback(() => {
-    // All browsers on iOS will return true here.
-    if (!isSafari()) return;
+  // const restorePositionSetting = React.useCallback(() => {
+  //   // All browsers on iOS will return true here.
+  //   if (!isSafari()) return;
 
-    if (previousBodyPosition !== null && !noBodyStyles) {
-      // Convert the position from "px" to Int
-      const y = -parseInt(document.body.style.top, 10);
-      const x = -parseInt(document.body.style.left, 10);
+  //   if (previousBodyPosition !== null && !noBodyStyles) {
+  //     // Convert the position from "px" to Int
+  //     const y = -parseInt(document.body.style.top, 10);
+  //     const x = -parseInt(document.body.style.left, 10);
 
-      // Restore styles
-      Object.assign(document.body.style, previousBodyPosition);
+  //     // Restore styles
+  //     Object.assign(document.body.style, previousBodyPosition);
 
-      window.requestAnimationFrame(() => {
-        if (preventScrollRestoration && activeUrl !== window.location.href) {
-          setActiveUrl(window.location.href);
-          return;
-        }
+  //     window.requestAnimationFrame(() => {
+  //       if (preventScrollRestoration && activeUrl !== window.location.href) {
+  //         setActiveUrl(window.location.href);
+  //         return;
+  //       }
 
-        window.scrollTo(x, y);
-      });
+  //       window.scrollTo(x, y);
+  //     });
 
-      previousBodyPosition = null;
-    }
-  }, [activeUrl]);
+  //     previousBodyPosition = null;
+  //   }
+  // }, [activeUrl]);
 
   React.useEffect(() => {
     function onScroll() {
@@ -109,37 +109,37 @@ export function usePositionFixed({
     };
   }, []);
 
-  React.useEffect(() => {
-    if (!modal) return;
+  // React.useEffect(() => {
+  //   if (!modal) return;
 
-    return () => {
-      if (typeof document === 'undefined') return;
+  //   return () => {
+  //     if (typeof document === 'undefined') return;
 
-      // Another drawer is opened, safe to ignore the execution
-      const hasDrawerOpened = !!document.querySelector('[data-vaul-drawer]');
-      if (hasDrawerOpened) return;
+  //     // Another drawer is opened, safe to ignore the execution
+  //     const hasDrawerOpened = !!document.querySelector('[data-vaul-drawer]');
+  //     if (hasDrawerOpened) return;
 
-      restorePositionSetting();
-    };
-  }, [modal, restorePositionSetting]);
+  //     restorePositionSetting();
+  //   };
+  // }, [modal, restorePositionSetting]);
 
-  React.useEffect(() => {
-    if (nested || !hasBeenOpened) return;
-    // This is needed to force Safari toolbar to show **before** the drawer starts animating to prevent a gnarly shift from happening
-    if (isOpen) {
-      // avoid for standalone mode (PWA)
-      const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-      !isStandalone && setPositionFixed();
+  // React.useEffect(() => {
+  //   if (nested || !hasBeenOpened) return;
+  //   // This is needed to force Safari toolbar to show **before** the drawer starts animating to prevent a gnarly shift from happening
+  //   if (isOpen) {
+  //     // avoid for standalone mode (PWA)
+  //     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+  //     !isStandalone && setPositionFixed();
 
-      if (!modal) {
-        window.setTimeout(() => {
-          restorePositionSetting();
-        }, 500);
-      }
-    } else {
-      restorePositionSetting();
-    }
-  }, [isOpen, hasBeenOpened, activeUrl, modal, nested, setPositionFixed, restorePositionSetting]);
+  //     if (!modal) {
+  //       window.setTimeout(() => {
+  //         restorePositionSetting();
+  //       }, 500);
+  //     }
+  //   } else {
+  //     restorePositionSetting();
+  //   }
+  // }, [isOpen, hasBeenOpened, activeUrl, modal, nested, setPositionFixed, restorePositionSetting]);
 
-  return { restorePositionSetting };
+  return { /* restorePositionSetting */ };
 }
