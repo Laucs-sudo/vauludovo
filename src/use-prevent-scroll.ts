@@ -110,11 +110,6 @@ export function usePreventScroll(options: PreventScrollOptions = {}) {
 // 4. When focusing an input, apply a transform to trick Safari into thinking the input is at the top
 //    of the page, which prevents it from scrolling the page. After the input is focused, scroll the element
 //    into view ourselves, without scrolling the whole page.
-// 5. Offset the body by the scroll position using a negative margin and scroll to the top. This should appear the
-//    same visually, but makes the actual scroll position always zero. This is required to make all of the
-//    above work or Safari will still try to scroll the page when focusing an input.
-// 6. As a last resort, handle window scroll events, and scroll back to the top. This can happen when attempting
-//    to navigate to an input with the next/previous buttons that's outside a modal.
 function preventScrollMobileSafari() {
   let scrollable: Element;
   let lastY = 0;
@@ -202,40 +197,15 @@ function preventScrollMobileSafari() {
     }
   };
 
-  let onWindowScroll = () => {
-    // Last resort. If the window scrolled, scroll it back to the top.
-    // It should always be at the top because the body will have a negative margin (see below).
-    window.scrollTo(0, 0);
-  };
-
-  // Record the original scroll position so we can restore it.
-  // Then apply a negative margin to the body to offset it by the scroll position. This will
-  // enable us to scroll the window to the top, which is required for the rest of this to work.
-  let scrollX = window.pageXOffset;
-  let scrollY = window.pageYOffset;
-
-  let restoreStyles = chain(
-    setStyle(document.documentElement, 'paddingRight', `${window.innerWidth - document.documentElement.clientWidth}px`),
-    // setStyle(document.documentElement, 'overflow', 'hidden'),
-    // setStyle(document.body, 'marginTop', `-${scrollY}px`),
-  );
-
-  // Scroll to the top. The negative margin on the body will make this appear the same.
-  window.scrollTo(0, 0);
-
   let removeEvents = chain(
     addEvent(document, 'touchstart', onTouchStart, { passive: false, capture: true }),
     addEvent(document, 'touchmove', onTouchMove, { passive: false, capture: true }),
     addEvent(document, 'touchend', onTouchEnd, { passive: false, capture: true }),
     addEvent(document, 'focus', onFocus, true),
-    addEvent(window, 'scroll', onWindowScroll),
   );
 
   return () => {
-    // Restore styles and scroll the page back to where it was.
-    restoreStyles();
     removeEvents();
-    window.scrollTo(scrollX, scrollY);
   };
 }
 
