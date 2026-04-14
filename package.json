@@ -65,5 +65,11 @@
   "packageManager": "pnpm@8.8.0",
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "rollup@<=4.22.4": "4.22.4",
+      "brace-expansion@<=2.0.2": "2.0.2"
+    }
   }
 }
